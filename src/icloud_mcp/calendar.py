@@ -11,11 +11,7 @@ from .config import config
 
 def _get_caldav_client(email: str, password: str) -> caldav.DAVClient:
     """Create CalDAV client (stateless)."""
-    return caldav.DAVClient(
-        url=config.CALDAV_SERVER,
-        username=email,
-        password=password
-    )
+    return caldav.DAVClient(url=config.CALDAV_SERVER, username=email, password=password)
 
 
 async def list_calendars(context: Context) -> List[Dict[str, Any]]:
@@ -32,11 +28,13 @@ async def list_calendars(context: Context) -> List[Dict[str, Any]]:
 
     result = []
     for cal in calendars:
-        result.append({
-            "id": str(cal.url),
-            "name": cal.name or "Unnamed Calendar",
-            "url": str(cal.url)
-        })
+        result.append(
+            {
+                "id": str(cal.url),
+                "name": cal.name or "Unnamed Calendar",
+                "url": str(cal.url),
+            }
+        )
 
     return result
 
@@ -45,7 +43,7 @@ async def list_events(
     context: Context,
     calendar_id: Optional[str] = None,
     start_date: Optional[str] = None,
-    end_date: Optional[str] = None
+    end_date: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """
     List calendar events with optional filtering.
@@ -92,8 +90,9 @@ async def list_events(
 
         # Filter out reminder calendars (they don't have events in the same format)
         calendars_to_search = [
-            cal for cal in all_calendars
-            if cal.name and '⚠' not in cal.name and 'reminder' not in cal.name.lower()
+            cal
+            for cal in all_calendars
+            if cal.name and "⚠" not in cal.name and "reminder" not in cal.name.lower()
         ]
 
         # If all calendars are filtered out, search all
@@ -115,36 +114,50 @@ async def list_events(
                     start_value = None
                     end_value = None
 
-                    if hasattr(vevent, 'dtstart') and vevent.dtstart:
+                    if hasattr(vevent, "dtstart") and vevent.dtstart:
                         try:
                             start_value = vevent.dtstart.value
-                            if hasattr(start_value, 'isoformat'):
+                            if hasattr(start_value, "isoformat"):
                                 start_value = start_value.isoformat()
                             else:
                                 start_value = str(start_value)
                         except Exception as _e:
                             pass
 
-                    if hasattr(vevent, 'dtend') and vevent.dtend:
+                    if hasattr(vevent, "dtend") and vevent.dtend:
                         try:
                             end_value = vevent.dtend.value
-                            if hasattr(end_value, 'isoformat'):
+                            if hasattr(end_value, "isoformat"):
                                 end_value = end_value.isoformat()
                             else:
                                 end_value = str(end_value)
                         except Exception as _e:
                             pass
 
-                    result.append({
-                        "id": str(event.url),
-                        "summary": str(vevent.summary.value) if hasattr(vevent, 'summary') and vevent.summary else "",
-                        "description": str(vevent.description.value) if hasattr(vevent, 'description') and vevent.description else "",
-                        "start": start_value,
-                        "end": end_value,
-                        "location": str(vevent.location.value) if hasattr(vevent, 'location') and vevent.location else "",
-                        "calendar": calendar.name or "Unknown",
-                        "url": str(event.url)
-                    })
+                    result.append(
+                        {
+                            "id": str(event.url),
+                            "summary": (
+                                str(vevent.summary.value)
+                                if hasattr(vevent, "summary") and vevent.summary
+                                else ""
+                            ),
+                            "description": (
+                                str(vevent.description.value)
+                                if hasattr(vevent, "description") and vevent.description
+                                else ""
+                            ),
+                            "start": start_value,
+                            "end": end_value,
+                            "location": (
+                                str(vevent.location.value)
+                                if hasattr(vevent, "location") and vevent.location
+                                else ""
+                            ),
+                            "calendar": calendar.name or "Unknown",
+                            "url": str(event.url),
+                        }
+                    )
                 except Exception as _e:
                     # Skip malformed events
                     continue
@@ -163,7 +176,7 @@ async def create_event(
     description: Optional[str] = None,
     location: Optional[str] = None,
     attendees: Optional[List[str]] = None,
-    calendar_id: Optional[str] = None
+    calendar_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Create a new calendar event.
@@ -194,12 +207,15 @@ async def create_event(
 
         # Filter out reminder/task calendars - they don't support VEVENT
         event_calendars = [
-            cal for cal in all_calendars
-            if cal.name and '⚠' not in cal.name and 'reminder' not in cal.name.lower()
+            cal
+            for cal in all_calendars
+            if cal.name and "⚠" not in cal.name and "reminder" not in cal.name.lower()
         ]
 
         if not event_calendars:
-            raise ValueError("No event calendars found (only reminder/task calendars available)")
+            raise ValueError(
+                "No event calendars found (only reminder/task calendars available)"
+            )
 
         calendar = event_calendars[0]
 
@@ -228,10 +244,17 @@ SEQUENCE:0
 
     if description:
         # Escape special characters in description
-        desc_escaped = description.replace('\\', '\\\\').replace(',', '\\,').replace(';', '\\;').replace('\n', '\\n')
+        desc_escaped = (
+            description.replace("\\", "\\\\")
+            .replace(",", "\\,")
+            .replace(";", "\\;")
+            .replace("\n", "\\n")
+        )
         ical_data += f"DESCRIPTION:{desc_escaped}\n"
     if location:
-        loc_escaped = location.replace('\\', '\\\\').replace(',', '\\,').replace(';', '\\;')
+        loc_escaped = (
+            location.replace("\\", "\\\\").replace(",", "\\,").replace(";", "\\;")
+        )
         ical_data += f"LOCATION:{loc_escaped}\n"
 
     # Add attendees (meeting invitations)
@@ -247,7 +270,9 @@ SEQUENCE:0
         event = calendar.add_event(ical_data)
     except Exception as e:
         # If add_event fails, try save_event as fallback
-        raise ValueError(f"Failed to create event in calendar '{calendar.name}': {str(e)}")
+        raise ValueError(
+            f"Failed to create event in calendar '{calendar.name}': {str(e)}"
+        )
 
     return {
         "id": str(event.url),
@@ -258,7 +283,7 @@ SEQUENCE:0
         "location": location or "",
         "attendees": attendees or [],
         "calendar": calendar.name,
-        "url": str(event.url)
+        "url": str(event.url),
     }
 
 
@@ -270,7 +295,7 @@ async def update_event(
     end: Optional[str] = None,
     description: Optional[str] = None,
     location: Optional[str] = None,
-    attendees: Optional[List[str]] = None
+    attendees: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """
     Update an existing calendar event.
@@ -293,7 +318,9 @@ async def update_event(
     # This prevents URL joining errors when event is on a different server (e.g., p72-caldav.icloud.com)
     parsed = urlparse(event_id)
     event_base_url = f"{parsed.scheme}://{parsed.netloc}"
-    event_client = caldav.DAVClient(url=event_base_url, username=email, password=password)
+    event_client = caldav.DAVClient(
+        url=event_base_url, username=email, password=password
+    )
 
     try:
         # Load existing event using CalendarObjectResource
@@ -312,58 +339,64 @@ async def update_event(
     if end:
         vevent.dtend.value = datetime.fromisoformat(end)
     if description is not None:
-        if hasattr(vevent, 'description'):
+        if hasattr(vevent, "description"):
             vevent.description.value = description
         else:
-            vevent.add('description').value = description
+            vevent.add("description").value = description
     if location is not None:
-        if hasattr(vevent, 'location'):
+        if hasattr(vevent, "location"):
             vevent.location.value = location
         else:
-            vevent.add('location').value = location
+            vevent.add("location").value = location
 
     # Update attendees
     if attendees is not None:
         # Remove existing attendees
-        if hasattr(vevent, 'attendee_list'):
+        if hasattr(vevent, "attendee_list"):
             for att in list(vevent.attendee_list):
                 vevent.remove(att)
 
         # Add new attendees
         for attendee_email in attendees:
-            att = vevent.add('attendee')
-            att.value = f'mailto:{attendee_email}'
-            att.params['CN'] = [attendee_email]
-            att.params['CUTYPE'] = ['INDIVIDUAL']
-            att.params['ROLE'] = ['REQ-PARTICIPANT']
-            att.params['PARTSTAT'] = ['NEEDS-ACTION']
-            att.params['RSVP'] = ['TRUE']
+            att = vevent.add("attendee")
+            att.value = f"mailto:{attendee_email}"
+            att.params["CN"] = [attendee_email]
+            att.params["CUTYPE"] = ["INDIVIDUAL"]
+            att.params["ROLE"] = ["REQ-PARTICIPANT"]
+            att.params["PARTSTAT"] = ["NEEDS-ACTION"]
+            att.params["RSVP"] = ["TRUE"]
 
     # Save changes - use PUT request directly to avoid parent dependency
     try:
         # Serialize the updated vCalendar data and send PUT request
         updated_ical = event.vobject_instance.serialize()
-        event_client.put(event_id, updated_ical, {"Content-Type": "text/calendar; charset=utf-8"})
+        event_client.put(
+            event_id, updated_ical, {"Content-Type": "text/calendar; charset=utf-8"}
+        )
     except Exception as e:
         raise Exception(f"Error saving event: {str(e)}")
 
     # Extract attendees for response
     attendee_list = []
-    if hasattr(vevent, 'attendee_list'):
+    if hasattr(vevent, "attendee_list"):
         for att in vevent.attendee_list:
-            if hasattr(att, 'value'):
-                email_addr = str(att.value).replace('mailto:', '')
+            if hasattr(att, "value"):
+                email_addr = str(att.value).replace("mailto:", "")
                 attendee_list.append(email_addr)
 
     return {
         "id": str(event.url),
-        "summary": str(vevent.summary.value) if hasattr(vevent, 'summary') else "",
-        "start": vevent.dtstart.value.isoformat() if hasattr(vevent, 'dtstart') else None,
-        "end": vevent.dtend.value.isoformat() if hasattr(vevent, 'dtend') else None,
-        "description": str(vevent.description.value) if hasattr(vevent, 'description') else "",
-        "location": str(vevent.location.value) if hasattr(vevent, 'location') else "",
+        "summary": str(vevent.summary.value) if hasattr(vevent, "summary") else "",
+        "start": (
+            vevent.dtstart.value.isoformat() if hasattr(vevent, "dtstart") else None
+        ),
+        "end": vevent.dtend.value.isoformat() if hasattr(vevent, "dtend") else None,
+        "description": (
+            str(vevent.description.value) if hasattr(vevent, "description") else ""
+        ),
+        "location": str(vevent.location.value) if hasattr(vevent, "location") else "",
         "attendees": attendee_list,
-        "url": str(event.url)
+        "url": str(event.url),
     }
 
 
@@ -383,7 +416,9 @@ async def delete_event(context: Context, event_id: str) -> Dict[str, str]:
     # This prevents URL joining errors when event is on a different server (e.g., p72-caldav.icloud.com)
     parsed = urlparse(event_id)
     event_base_url = f"{parsed.scheme}://{parsed.netloc}"
-    event_client = caldav.DAVClient(url=event_base_url, username=email, password=password)
+    event_client = caldav.DAVClient(
+        url=event_base_url, username=email, password=password
+    )
 
     # Use CalendarObjectResource to handle full URLs correctly
     event = caldav.CalendarObjectResource(client=event_client, url=event_id)
@@ -397,7 +432,7 @@ async def search_events(
     query: str,
     calendar_id: Optional[str] = None,
     start_date: Optional[str] = None,
-    end_date: Optional[str] = None
+    end_date: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """
     Search for events by text query.
@@ -417,7 +452,8 @@ async def search_events(
     # Filter by query
     query_lower = query.lower()
     filtered_events = [
-        event for event in events
+        event
+        for event in events
         if query_lower in event.get("summary", "").lower()
         or query_lower in event.get("description", "").lower()
         or query_lower in event.get("location", "").lower()

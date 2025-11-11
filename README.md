@@ -88,7 +88,7 @@ docker-compose up -d
 Create a `.env` file with the following variables:
 
 ```env
-# iCloud Credentials (fallback if not in headers)
+# iCloud Credentials (optional if Authorization header is provided)
 ICLOUD_EMAIL=your-email@icloud.com
 ICLOUD_APP_SPECIFIC_PASSWORD=xxxx-xxxx-xxxx-xxxx
 
@@ -106,17 +106,29 @@ SMTP_PORT=587
 
 ### Authentication
 
-The server supports two authentication methods (checked in order):
+The server supports three authentication methods (checked in order of priority):
 
-1. **Request Headers** (recommended for multi-user scenarios):
+1. **Authorization Header** (recommended, follows [MCP specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization#access-token-usage)):
+   - Header: `Authorization: Bearer <base64_token>`
+   - Token format: Base64-encoded string of `email:app_password`
+   - Example: For `user@icloud.com:xxxx-xxxx-xxxx-xxxx`, encode to base64:
+     ```bash
+     echo -n "user@icloud.com:xxxx-xxxx-xxxx-xxxx" | base64
+     # Result: dXNlckBpY2xvdWQuY29tOnh4eHgteHh4eC14eHh4LXh4eHg=
+     ```
+   - Use in request: `Authorization: Bearer dXNlckBpY2xvdWQuY29tOnh4eHgteHh4eC14eHh4LXh4eHg=`
+
+2. **Request Headers** (alternative for multi-user scenarios):
    - `X-Apple-Email`: iCloud email address
    - `X-Apple-App-Specific-Password`: App-specific password
 
-2. **Environment Variables** (fallback):
+3. **Environment Variables** (fallback):
    - `ICLOUD_EMAIL`
    - `ICLOUD_APP_SPECIFIC_PASSWORD`
 
-If credentials are not found in either location, the server returns a 401 error.
+If credentials are not found in any location, the server returns a 401 error.
+
+**Note:** When using the Authorization Bearer token, environment variables become optional.
 
 ## Usage
 
