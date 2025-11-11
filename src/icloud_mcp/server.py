@@ -12,20 +12,21 @@ mcp = FastMCP("iCloud MCP Server")
 # Health Check Endpoint
 # ============================================================================
 
+
 @mcp.custom_route("/health", methods=["GET"])
 async def health_check(request):
     """Health check endpoint for Cloud Run and Docker."""
     from starlette.responses import JSONResponse
-    return JSONResponse({
-        "status": "healthy",
-        "service": "icloud-mcp",
-        "transport": "sse"
-    })
+
+    return JSONResponse(
+        {"status": "healthy", "service": "icloud-mcp", "transport": "sse"}
+    )
 
 
 # ============================================================================
 # Calendar Tools (CalDAV)
 # ============================================================================
+
 
 @mcp.tool()
 async def calendar_list_calendars(context) -> list:
@@ -44,10 +45,7 @@ async def calendar_list_calendars(context) -> list:
 
 @mcp.tool()
 async def calendar_list_events(
-    context,
-    calendar_id: str = None,
-    start_date: str = None,
-    end_date: str = None
+    context, calendar_id: str = None, start_date: str = None, end_date: str = None
 ) -> list:
     """
     List calendar events with optional filtering.
@@ -74,7 +72,7 @@ async def calendar_create_event(
     description: str = None,
     location: str = None,
     attendees: list[str] = None,
-    calendar_id: str = None
+    calendar_id: str = None,
 ) -> dict:
     """
     Create a new calendar event.
@@ -89,7 +87,9 @@ async def calendar_create_event(
         calendar_id: Target calendar URL/ID (optional)
     """
     try:
-        return await calendar.create_event(context, summary, start, end, description, location, attendees, calendar_id)
+        return await calendar.create_event(
+            context, summary, start, end, description, location, attendees, calendar_id
+        )
     except AuthenticationError as e:
         return {"error": str(e), "status": 401}
     except Exception as e:
@@ -105,7 +105,7 @@ async def calendar_update_event(
     end: str = None,
     description: str = None,
     location: str = None,
-    attendees: list[str] = None
+    attendees: list[str] = None,
 ) -> dict:
     """
     Update an existing calendar event.
@@ -120,7 +120,9 @@ async def calendar_update_event(
         attendees: New list of attendee email addresses (optional, replaces existing)
     """
     try:
-        return await calendar.update_event(context, event_id, summary, start, end, description, location, attendees)
+        return await calendar.update_event(
+            context, event_id, summary, start, end, description, location, attendees
+        )
     except AuthenticationError as e:
         return {"error": str(e), "status": 401}
     except Exception as e:
@@ -149,7 +151,7 @@ async def calendar_search_events(
     query: str,
     calendar_id: str = None,
     start_date: str = None,
-    end_date: str = None
+    end_date: str = None,
 ) -> list:
     """
     Search for events by text query.
@@ -161,7 +163,9 @@ async def calendar_search_events(
         end_date: End date in ISO format (optional)
     """
     try:
-        return await calendar.search_events(context, query, calendar_id, start_date, end_date)
+        return await calendar.search_events(
+            context, query, calendar_id, start_date, end_date
+        )
     except AuthenticationError as e:
         return {"error": str(e), "status": 401}
     except Exception as e:
@@ -171,6 +175,7 @@ async def calendar_search_events(
 # ============================================================================
 # Contacts Tools (CardDAV)
 # ============================================================================
+
 
 @mcp.tool()
 async def contacts_list(context, limit: int = None) -> list:
@@ -212,7 +217,7 @@ async def contacts_create(
     emails: list[str] = None,
     addresses: list[str] = None,
     organization: str = None,
-    title: str = None
+    title: str = None,
 ) -> dict:
     """
     Create a new contact.
@@ -226,7 +231,9 @@ async def contacts_create(
         title: Job title (optional)
     """
     try:
-        return await contacts.create_contact(context, name, phones, emails, addresses, organization, title)
+        return await contacts.create_contact(
+            context, name, phones, emails, addresses, organization, title
+        )
     except AuthenticationError as e:
         return {"error": str(e), "status": 401}
     except Exception as e:
@@ -242,7 +249,7 @@ async def contacts_update(
     emails: list[str] = None,
     addresses: list[str] = None,
     organization: str = None,
-    title: str = None
+    title: str = None,
 ) -> dict:
     """
     Update an existing contact.
@@ -257,7 +264,9 @@ async def contacts_update(
         title: New job title (optional)
     """
     try:
-        return await contacts.update_contact(context, contact_id, name, phones, emails, addresses, organization, title)
+        return await contacts.update_contact(
+            context, contact_id, name, phones, emails, addresses, organization, title
+        )
     except AuthenticationError as e:
         return {"error": str(e), "status": 401}
     except Exception as e:
@@ -300,6 +309,7 @@ async def contacts_search(context, query: str) -> list:
 # Email Tools (IMAP/SMTP)
 # ============================================================================
 
+
 @mcp.tool()
 async def email_list_folders(context) -> list:
     """
@@ -317,10 +327,7 @@ async def email_list_folders(context) -> list:
 
 @mcp.tool()
 async def email_list_messages(
-    context,
-    folder: str = "INBOX",
-    limit: int = 50,
-    unread_only: bool = False
+    context, folder: str = "INBOX", limit: int = 50, unread_only: bool = False
 ) -> list:
     """
     List messages in a folder.
@@ -340,10 +347,7 @@ async def email_list_messages(
 
 @mcp.tool()
 async def email_get_message(
-    context,
-    message_id: str,
-    folder: str = "INBOX",
-    include_body: bool = True
+    context, message_id: str, folder: str = "INBOX", include_body: bool = True
 ) -> dict:
     """
     Get a specific message with full details.
@@ -363,10 +367,7 @@ async def email_get_message(
 
 @mcp.tool()
 async def email_get_messages(
-    context,
-    message_ids: list[str],
-    folder: str = "INBOX",
-    include_body: bool = True
+    context, message_ids: list[str], folder: str = "INBOX", include_body: bool = True
 ) -> list:
     """
     Get multiple messages at once (bulk fetch).
@@ -377,7 +378,9 @@ async def email_get_messages(
         include_body: Include message body content (default: True)
     """
     try:
-        return await email_module.get_messages(context, message_ids, folder, include_body)
+        return await email_module.get_messages(
+            context, message_ids, folder, include_body
+        )
     except AuthenticationError as e:
         return {"error": str(e), "status": 401}
     except Exception as e:
@@ -386,10 +389,7 @@ async def email_get_messages(
 
 @mcp.tool()
 async def email_search(
-    context,
-    query: str,
-    folder: str = "INBOX",
-    limit: int = 50
+    context, query: str, folder: str = "INBOX", limit: int = 50
 ) -> list:
     """
     Search for messages by text query.
@@ -415,7 +415,7 @@ async def email_send(
     body: str,
     cc: str = None,
     bcc: str = None,
-    html: bool = False
+    html: bool = False,
 ) -> dict:
     """
     Send an email message via SMTP.
@@ -429,7 +429,9 @@ async def email_send(
         html: Whether body is HTML (default: False)
     """
     try:
-        return await email_module.send_message(context, to, subject, body, cc, bcc, html)
+        return await email_module.send_message(
+            context, to, subject, body, cc, bcc, html
+        )
     except AuthenticationError as e:
         return {"error": str(e), "status": 401}
     except Exception as e:
@@ -438,10 +440,7 @@ async def email_send(
 
 @mcp.tool()
 async def email_move(
-    context,
-    message_id: str,
-    from_folder: str,
-    to_folder: str
+    context, message_id: str, from_folder: str, to_folder: str
 ) -> dict:
     """
     Move a message to another folder.
@@ -452,7 +451,9 @@ async def email_move(
         to_folder: Destination folder
     """
     try:
-        return await email_module.move_message(context, message_id, from_folder, to_folder)
+        return await email_module.move_message(
+            context, message_id, from_folder, to_folder
+        )
     except AuthenticationError as e:
         return {"error": str(e), "status": 401}
     except Exception as e:
@@ -461,10 +462,7 @@ async def email_move(
 
 @mcp.tool()
 async def email_delete(
-    context,
-    message_id: str,
-    folder: str = "INBOX",
-    permanent: bool = False
+    context, message_id: str, folder: str = "INBOX", permanent: bool = False
 ) -> dict:
     """
     Delete a message.
@@ -483,11 +481,7 @@ async def email_delete(
 
 
 @mcp.tool()
-async def email_mark_read(
-    context,
-    message_id: str,
-    folder: str = "INBOX"
-) -> dict:
+async def email_mark_read(context, message_id: str, folder: str = "INBOX") -> dict:
     """
     Mark a message as read.
 
@@ -504,11 +498,7 @@ async def email_mark_read(
 
 
 @mcp.tool()
-async def email_mark_unread(
-    context,
-    message_id: str,
-    folder: str = "INBOX"
-) -> dict:
+async def email_mark_unread(context, message_id: str, folder: str = "INBOX") -> dict:
     """
     Mark a message as unread.
 
@@ -528,15 +518,17 @@ async def email_mark_unread(
 # Server Entrypoint
 # ============================================================================
 
+
 def run():
     """Run the MCP server."""
-    from .config import config as app_config
+
     mcp.run(transport="stdio")
 
 
 def run_http():
     """Run the MCP server with HTTP transport."""
     from .config import config as app_config
+
     mcp.run(transport="sse", port=app_config.MCP_SERVER_PORT)
 
 
