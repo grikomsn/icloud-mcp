@@ -16,6 +16,5 @@ services:
       - CARDDAV_SERVER=${CARDDAV_SERVER:-https://contacts.icloud.com}
       - IMAP_SERVER=${IMAP_SERVER:-imap.mail.me.com}
       - SMTP_SERVER=${SMTP_SERVER:-smtp.mail.me.com}
-      - PORT=43568
 
     restart: unless-stopped
