@@ -88,7 +88,7 @@ docker-compose up -d
 Create a `.env` file with the following variables:
 
 ```env
-# iCloud Credentials (fallback if not in headers)
+# iCloud Credentials (optional if Authorization header is provided)
 ICLOUD_EMAIL=your-email@icloud.com
 ICLOUD_APP_SPECIFIC_PASSWORD=xxxx-xxxx-xxxx-xxxx
 
