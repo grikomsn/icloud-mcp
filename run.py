@@ -23,7 +23,7 @@ def main():
         "--port",
         type=int,
         default=None,
-        help="Port for HTTP server (default: from env or 8000)"
+        help="Port for HTTP server (default: from env or 43568)"
     )
 
     args = parser.parse_args()

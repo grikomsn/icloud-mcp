@@ -21,9 +21,9 @@ RUN useradd --create-home --shell /bin/bash app \
 
 USER app
 
-# Cloud Run uses PORT env variable (default 8080, but we prefer 8000)
-ENV PORT=8000
-EXPOSE 8000
+# Cloud Run uses PORT env variable (default 8080, but we prefer 43568)
+ENV PORT=43568
+EXPOSE 43568
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
