@@ -106,17 +106,21 @@ SMTP_PORT=587
 
 ### Authentication
 
-The server supports two authentication methods (checked in order):
+The server supports three authentication methods (checked in order):
 
-1. **Request Headers** (recommended for multi-user scenarios):
+1. **Authorization Header (preferred for MCP clients)**:
+   - Provide `Authorization: Bearer <token>`
+   - `<token>` must be the Base64 encoding of `email:app_password` as specified in the [Model Context Protocol authorization spec (2025-06-18)](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization#access-token-usage)
+
+2. **Custom Request Headers** (compatible with existing deployments):
    - `X-Apple-Email`: iCloud email address
    - `X-Apple-App-Specific-Password`: App-specific password
 
-2. **Environment Variables** (fallback):
+3. **Environment Variables** (fallback):
    - `ICLOUD_EMAIL`
    - `ICLOUD_APP_SPECIFIC_PASSWORD`
 
-If credentials are not found in either location, the server returns a 401 error.
+If credentials are not found or the bearer token is invalid, the server returns a 401 error.
 
 ## Usage
 
