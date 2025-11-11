@@ -99,7 +99,7 @@ IMAP_SERVER=imap.mail.me.com
 SMTP_SERVER=smtp.mail.me.com
 
 # Server Configuration
-MCP_SERVER_PORT=8000
+MCP_SERVER_PORT=43568
 IMAP_PORT=993
 SMTP_PORT=587
 ```
@@ -138,13 +138,13 @@ python -m icloud_mcp.server
 
 ```bash
 # Using Python
-python run.py --http --port 8000
+python run.py --http --port 43568
 
 # Using Docker Compose
 docker-compose up
 ```
 
-The server will be available at `http://localhost:8000/mcp`.
+The server will be available at `http://localhost:43568/mcp`.
 
 ## Integration with Claude Desktop
 

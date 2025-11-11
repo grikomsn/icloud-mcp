@@ -18,7 +18,7 @@ class Config:
     SMTP_SERVER: str = os.getenv("SMTP_SERVER", "smtp.mail.me.com")
 
     # Ports
-    MCP_SERVER_PORT: int = int(os.getenv("MCP_SERVER_PORT", "8000"))
+    MCP_SERVER_PORT: int = int(os.getenv("MCP_SERVER_PORT", "43568"))
     IMAP_PORT: int = int(os.getenv("IMAP_PORT", "993"))
     SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
 
